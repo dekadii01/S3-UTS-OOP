@@ -22,7 +22,7 @@ Sistem ini mensimulasikan **aplikasi perpustakaan sederhana berbasis terminal**,
 | Menu Utama | <img src="img/after.png" width="600" alt="Tampilan menu utama"> |
 | Daftar Buku | <img src="img/after2.png" width="600" alt="Tampilan daftar buku"> |
 | Buku Dipinjam | <img src="img/after3.png" width="600" alt="Tampilan peminjaman buku"> |
-| Peminjaman Buku | <img src="img/after4.png" width="600" alt="Tampilan buku dipinjam"> |
+| Pengembalian Buku | <img src="img/after4.png" width="600" alt="Tampilan buku dipinjam"> |
 
 ---
 
