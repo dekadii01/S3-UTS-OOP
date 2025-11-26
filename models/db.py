@@ -17,10 +17,6 @@ class Database:
             this.conn = None
             this.cursor = None
 
-    # -----------------------------
-    # Method umum untuk query
-    # -----------------------------
-
     def execute(this, sql, params=None):
         """Menjalankan query INSERT, UPDATE, DELETE"""
         if this.cursor is None:
@@ -61,9 +57,6 @@ class Database:
             print("[FETCH ERROR]", e)
             return None
 
-    # -----------------------------
-    # Tutup Koneksi
-    # -----------------------------
     def close(this):
         if this.cursor:
             this.cursor.close()

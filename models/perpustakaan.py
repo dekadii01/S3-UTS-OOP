@@ -5,6 +5,7 @@ from rich.text import Text
 from .db import Database
 from .anggota import Anggota
 from .buku import Buku, BukuReferensi
+from datetime import datetime
 
 console = Console()
 
@@ -15,10 +16,7 @@ class Perpustakaan:
         this.__daftar_peminjaman = {}
         this.db = Database()
         
-
-    # ======================
     # 🔹 Bagian Anggota
-    # ======================
     def tambah_anggota(this, id_anggota, nama, alamat, show_message=False):
         anggota_baru = Anggota(id_anggota, nama, alamat)
         anggota_baru.save()
@@ -70,28 +68,52 @@ class Perpustakaan:
         # tandai buku sebagai dipinjam di memori
         buku.set_tersedia(False)
         this.__daftar_peminjaman[buku.id_buku] = anggota.id_anggota
-        anggota.tambah_pinjaman(buku) 
+        anggota.tambah_pinjaman(buku)
 
-        # update database
-        sql = "UPDATE buku SET tersedia = %s WHERE id_buku = %s"
-        sukses = this.db.execute(sql, (False, buku.id_buku))
+        # update status buku di database
+        sql_update_buku = "UPDATE buku SET tersedia = %s WHERE id_buku = %s"
+        sukses = this.db.execute(sql_update_buku, (False, buku.id_buku))
         if not sukses:
             return False, "Gagal memperbarui status buku di database."
 
+        # simpan data peminjaman ke tabel peminjaman
+        tanggal_pinjam = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        sql_insert_peminjaman = """
+            INSERT INTO peminjaman (id_anggota, id_buku, tanggal_pinjam)
+            VALUES (%s, %s, %s)
+        """
+        sukses = this.db.execute(sql_insert_peminjaman, (anggota.id_anggota, buku.id_buku, tanggal_pinjam))
+        if not sukses:
+            return False, "Gagal menyimpan data peminjaman ke database."
+
         return True, f"Buku '{buku.judul}' berhasil dipinjam oleh {anggota.nama}."
-
-
 
     def kembalikan_buku(this, anggota, buku, hari_terlambat=0):
         if buku not in anggota.get_pinjaman():
             console.print(f"[bold red]❌ Buku '{buku.judul}' tidak ditemukan di daftar pinjaman anggota.[/bold red]")
             return False, "Buku tidak ditemukan di daftar pinjaman anggota."
 
+        # Hapus dari daftar pinjaman anggota
         anggota.hapus_pinjaman(buku)
+        
+        # Tandai buku sebagai tersedia
         buku.set_tersedia(True)
-        denda = buku.hitung_denda(hari_terlambat)
-        del this.__daftar_peminjaman[buku]
+        
+        # Update status buku di database
+        sql = "UPDATE buku SET tersedia = %s WHERE id_buku = %s"
+        sukses_update = this.db.execute(sql, (1, buku.id_buku))
+        if not sukses_update:
+            console.print(f"[bold red]❌ Gagal memperbarui status buku di database.[/bold red]")
+            return False, "Gagal memperbarui status buku di database."
 
+        # Hitung denda jika ada
+        denda = buku.hitung_denda(hari_terlambat)
+
+        # Hapus dari daftar peminjaman internal
+        if buku.id_buku in this.__daftar_peminjaman:
+            del this.__daftar_peminjaman[buku.id_buku]
+
+        # Tampilkan info pengembalian
         warna_panel = "bold red" if denda > 0 else "bold green"
         console.print(Panel.fit(
             f"📗 Buku [bold cyan]'{buku.judul}'[/bold cyan] dikembalikan oleh [bold yellow]{anggota.nama}[/bold yellow].\n"
@@ -101,6 +123,7 @@ class Perpustakaan:
         ))
 
         return True, f"Buku '{buku.judul}' dikembalikan. Denda: Rp{denda}"
+
 
     # tampilkan semua buku
     def tampilkan_semua_buku(this):

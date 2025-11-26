@@ -93,13 +93,80 @@ class Controller:
 
 
     def kembalikan_buku(this):
-        id_buku = int(this.view.input_data("Masukkan ID buku yang dikembalikan: "))
+        # Tampilkan daftar buku yang sedang dipinjam user
+        sql = """
+            SELECT 
+                p.id_peminjaman,
+                b.id_buku,
+                b.judul,
+                b.pengarang,
+                b.tahun_terbit,
+                p.tanggal_pinjam,
+                p.tanggal_kembali,
+                a.nama AS nama_peminjam
+            FROM peminjaman p
+            JOIN buku b ON p.id_buku = b.id_buku
+            JOIN anggota a ON p.id_anggota = a.id_anggota
+            WHERE p.id_anggota = %s AND p.tanggal_kembali IS NULL
+            ORDER BY p.tanggal_pinjam DESC
+
+        """
+        daftar_pinjam = this.perpustakaan.db.fetch_all(sql, (this.user_logged_in.id_anggota,))
+
+        if not daftar_pinjam:
+            console.print("[bold yellow]📭 Anda belum meminjam buku apapun.[/bold yellow]")
+            return
+
+        # Tampilkan tabel buku yang dipinjam
+        table = Table(title=f"📚 Buku yang Sedang Dipinjam oleh {this.user_logged_in.nama}", header_style="bold magenta")
+        table.add_column("ID Buku", justify="center", style="bold cyan")
+        table.add_column("Judul", style="white")
+        table.add_column("Penulis", style="white")
+        table.add_column("Tahun", justify="center", style="yellow")
+        table.add_column("Tanggal Pinjam", justify="center", style="green")
+
+        for buku in daftar_pinjam:
+            table.add_row(
+                buku["id_buku"],
+                buku["judul"],
+                buku["pengarang"],
+                str(buku["tahun_terbit"]),
+                str(buku["tanggal_pinjam"])
+            )
+
+        console.print(table)
+
+        # Input ID buku sebagai string
+        id_buku = this.view.input_data("Masukkan ID buku yang dikembalikan: ").strip()
+
+        if not id_buku:
+            console.print("[bold red]❌ ID buku tidak boleh kosong![/bold red]")
+            return
+
+        # Ambil buku dari perpustakaan
         buku = this.perpustakaan.get_buku_by_id(id_buku)
-        if buku:
+        if not buku:
+            console.print("[bold red]❌ Buku tidak ditemukan.[/bold red]")
+            return
+
+        # Input hari keterlambatan
+        try:
             hari_terlambat = int(this.view.input_data("Hari terlambat: "))
-            sukses, pesan = this.perpustakaan.kembalikan_buku(this.user_logged_in, buku, hari_terlambat)
+        except ValueError:
+            hari_terlambat = 0  # Jika user input salah, anggap 0 hari
+            console.print("[bold yellow]Input hari terlambat tidak valid, dianggap 0 hari[/bold yellow]")
+
+        # Proses pengembalian melalui model
+        sukses, pesan = this.perpustakaan.kembalikan_buku(this.user_logged_in, buku, hari_terlambat)
+
+        # Tampilkan pesan hasil pengembalian
+        if sukses:
+            console.print(f"[bold green]{pesan}[/bold green]")
         else:
-            this.view.tampilkan_pesan("Buku tidak ditemukan.")
+            console.print(f"[bold red]❌ {pesan}[/bold red]")
+
+
+
 
     def tampilkan_buku(this):
         buku_list = this.perpustakaan.tampilkan_semua_buku()
