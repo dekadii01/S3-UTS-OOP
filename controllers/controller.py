@@ -12,7 +12,7 @@ class Controller:
 
     def login(this):
         nim = this.view.input_nim()
-        anggota = this.perpustakaan.get_anggota_by_id(int(nim))  # ini aman karena NIM angka
+        anggota = this.perpustakaan.get_anggota_by_id(int(nim)) 
         if anggota:
             this.user_logged_in = anggota
             this.view.tampilkan_pesan(f"Selamat datang, {anggota.nama}!")

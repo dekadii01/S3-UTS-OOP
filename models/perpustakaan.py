@@ -26,12 +26,6 @@ class Perpustakaan:
             console.print(f"[bold green]✔ Anggota '{nama}' berhasil ditambahkan![/bold green]")
         return anggota_baru
 
-    # def get_anggota_by_id(this, id_anggota):
-    #     for anggota in this.__daftar_anggota:
-    #         if anggota.id_anggota == id_anggota:
-    #             return anggota
-    #     return None
-
     def get_anggota_by_id(this, id_anggota):
         sql = "SELECT * FROM anggota WHERE id_anggota = %s"
         row = this.db.fetch_one(sql, (id_anggota,))

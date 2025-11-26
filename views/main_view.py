@@ -1,3 +1,9 @@
+from rich.table import Table
+from rich.console import Console
+from rich.panel import Panel
+
+console = Console()
+
 class MainView:
     @staticmethod
     def tampilkan_menu():
@@ -18,7 +24,7 @@ class MainView:
 
     @staticmethod
     def tampilkan_pesan(pesan):
-        print(pesan)
+        console.print(pesan)
 
     @staticmethod
     def tampilkan_list(data_list):
