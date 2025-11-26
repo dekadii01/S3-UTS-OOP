@@ -1,10 +1,10 @@
 class Buku:
-    def __init__(this, id_buku, judul, pengarang, tahun_terbit):
+    def __init__(this, id_buku, judul, pengarang, tahun_terbit, status="tersedia"):
         this.id_buku = id_buku
         this.judul = judul
         this.pengarang = pengarang
         this.tahun_terbit = tahun_terbit
-        this.__tersedia = True  # Encapsulation
+        this.status = status
 
     def tampilkan_info(this):
         status = "Tersedia" if this.__tersedia else "Dipinjam"
@@ -12,7 +12,7 @@ class Buku:
 
     # Getter & Setter
     def is_tersedia(this):
-        return this.__tersedia
+        return this.status == "tersedia"
 
     def set_tersedia(this, value: bool):
         this.__tersedia = value

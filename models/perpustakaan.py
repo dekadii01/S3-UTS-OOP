@@ -2,7 +2,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
-
+from .db import Database
 from .anggota import Anggota
 from .buku import Buku, BukuReferensi
 
@@ -13,13 +13,15 @@ class Perpustakaan:
         this.__daftar_anggota = []
         this.__daftar_buku = []
         this.__daftar_peminjaman = {}
+        this.db = Database()
+        
 
     # ======================
     # 🔹 Bagian Anggota
     # ======================
     def tambah_anggota(this, id_anggota, nama, alamat, show_message=False):
         anggota_baru = Anggota(id_anggota, nama, alamat)
-        this.__daftar_anggota.append(anggota_baru)
+        anggota_baru.save()
         if show_message:
             console.print(f"[bold green]✔ Anggota '{nama}' berhasil ditambahkan![/bold green]")
         return anggota_baru
@@ -39,34 +41,35 @@ class Perpustakaan:
             console.print(f"[cyan]📘 Buku '{buku.judul}' berhasil ditambahkan ke koleksi.[/cyan]")
 
     def get_buku_by_id(this, id_buku):
-        for buku in this.__daftar_buku:
-            if buku.id_buku == id_buku:
-                return buku
+        sql = "SELECT * FROM buku WHERE id_buku = %s"
+        row = this.db.fetch_one(sql, (id_buku,))
+
+        if row:
+            # kembalikan objek Buku
+            return Buku(
+                row["id_buku"],
+                row["judul"],
+                row["pengarang"],
+                row["tahun_terbit"],
+                row["tersedia"]
+            )
         return None
+
 
     # ======================
     # 🔹 Bagian Peminjaman
     # ======================
-    def pinjam_buku(this, anggota, buku, hari_pinjam=7):
+    def pinjam_buku(this, anggota, buku):
         if not buku.is_tersedia():
-            console.print(f"[bold red]❌ Buku '{buku.judul}' sedang dipinjam orang lain.[/bold red]")
             return False, "Buku sedang dipinjam orang lain."
 
+        # tandai buku sebagai dipinjam
         buku.set_tersedia(False)
-        anggota.tambah_pinjaman(buku)
-        this.__daftar_peminjaman[buku] = {
-            "anggota": anggota,
-            "hari_pinjam": hari_pinjam,
-            "hari_terlambat": 0
-        }
+        this.__daftar_peminjaman[buku.id_buku] = anggota.id_anggota
+        anggota.tambah_pinjaman(buku)  # pastikan method ini ada di kelas Anggota
 
-        console.print(Panel.fit(
-            f"📖 Buku [bold cyan]'{buku.judul}'[/bold cyan] berhasil dipinjam oleh [bold yellow]{anggota.nama}[/bold yellow].\n"
-            f"Batas waktu: {hari_pinjam} hari.",
-            title="Peminjaman Berhasil",
-            style="bold green"
-        ))
-        return True, f""
+        return True, f"Buku '{buku.judul}' berhasil dipinjam oleh {anggota.nama}."
+
 
     def kembalikan_buku(this, anggota, buku, hari_terlambat=0):
         if buku not in anggota.get_pinjaman():
@@ -90,10 +93,27 @@ class Perpustakaan:
 
     # tampilkan semua buku
     def tampilkan_semua_buku(this):
-        if not this.__daftar_buku:
-            console.print("[bold yellow]⚠ Belum ada buku di perpustakaan.[/bold yellow]")
-            return
+        sql = "SELECT id_buku, judul, pengarang, tahun_terbit, tersedia FROM buku"
+        rows = this.db.fetch_all(sql)
 
+        if not rows:
+            console.print("[bold yellow]⚠ Belum ada buku di database.[/bold yellow]")
+            return []
+
+        # convert DB → object Buku
+        list_buku = []
+        for row in rows:
+            buku = Buku(
+                id_buku=row["id_buku"],
+                judul=row["judul"],
+                pengarang=row["pengarang"],
+                tahun_terbit=row["tahun_terbit"]
+            )
+            # set status tersedia
+            buku.set_tersedia(bool(row["tersedia"]))
+            list_buku.append(buku)
+
+        # tampilkan tabel Rich
         table = Table(title="📚 Daftar Buku di Perpustakaan", header_style="bold magenta")
         table.add_column("ID", justify="center", style="bold cyan")
         table.add_column("Judul", style="white")
@@ -101,10 +121,15 @@ class Perpustakaan:
         table.add_column("Tahun", justify="center", style="yellow")
         table.add_column("Status", justify="center", style="bold")
 
-        for buku in this.__daftar_buku:
+        for buku in list_buku:
             status = "[green]Tersedia[/green]" if buku.is_tersedia() else "[red]Dipinjam[/red]"
-            table.add_row(str(buku.id_buku), buku.judul, buku.pengarang, str(buku.tahun_terbit), status)
+            table.add_row(
+                str(buku.id_buku),
+                buku.judul,
+                buku.pengarang,
+                str(buku.tahun_terbit),
+                status
+            )
 
         console.print(table)
-        buku = this.__daftar_buku
-        return buku
+        return list_buku

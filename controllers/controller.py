@@ -18,6 +18,7 @@ class Controller:
             this.view.tampilkan_pesan(f"Selamat datang, {anggota.nama}!")
         else:
             this.view.tampilkan_pesan("NIM tidak ditemukan.")
+            return
 
     def tampilkan_buku_dipinjam(this):
         peminjam = this.user_logged_in.get_pinjaman()
@@ -44,7 +45,6 @@ class Controller:
         console.print(table)
 
     def pinjam_buku(this):
-        # Filter buku yang tersedia
         buku_tersedia = [buku for buku in this.perpustakaan.tampilkan_semua_buku() if buku.is_tersedia()]
 
         if not buku_tersedia:
@@ -52,13 +52,14 @@ class Controller:
             return
 
         # Input ID buku
-        id_buku = int(console.input("[bold green]Masukkan ID buku yang ingin dipinjam:[/bold green] "))
+        id_buku = console.input("[bold green]Masukkan ID buku yang ingin dipinjam:[/bold green] ")
+
         buku = this.perpustakaan.get_buku_by_id(id_buku)
         if not buku:
-            console.print("[bold red]❌ Maaf, tidak ada buku yang tersedia saat ini.[/bold red]")
+            console.print("[bold red]❌ Buku tidak ditemukan.[/bold red]")
             return
 
-        # dewtail buku
+        # tampilkan detail
         console.print(Panel.fit(
             f"[bold cyan]ID:[/bold cyan] {buku.id_buku}\n"
             f"[bold cyan]Judul:[/bold cyan] {buku.judul}\n"
@@ -70,15 +71,18 @@ class Controller:
         ))
 
         # konfirmasi pinjam
-        konfirmasi =  console.input("[bold yellow]Apakah Anda yakin ingin meminjam buku ini? (y/n): [/bold yellow]").lower()
-        if konfirmasi == "y":
-            sukses, pesan = this.perpustakaan.pinjam_buku(this.user_logged_in, buku)
-            if sukses:
-                console.print(f"[bold green] {pesan}[/bold green]")
-            else:
-                console.print(f"[bold red]❌ {pesan}[/bold red]")
-        else:
+        konfirmasi = console.input("[bold yellow]Apakah Anda yakin ingin meminjam buku ini? (y/n): [/bold yellow]").lower()
+        if konfirmasi != "y":
             console.print("[bold cyan]Peminjaman dibatalkan.[/bold cyan]")
+            return
+
+        # proses peminjaman
+        sukses, pesan = this.perpustakaan.pinjam_buku(this.user_logged_in, buku)
+        if sukses:
+            console.print(f"[bold green]{pesan}[/bold green]")
+        else:
+            console.print(f"[bold red]❌ {pesan}[/bold red]")
+
 
     def kembalikan_buku(this):
         id_buku = int(this.view.input_data("Masukkan ID buku yang dikembalikan: "))

@@ -25,10 +25,6 @@ perpus = Perpustakaan()
 view = MainView()
 controller = Controller(perpus, view)
 
-# Tambah anggota contoh
-perpus.tambah_anggota(2401010015, "Adi Pramana", "Badung")
-perpus.tambah_anggota(2401010018, "Reza Satya", "Denpasar")
-
 # Tambah buku contoh
 perpus.tambah_buku(Buku(1, "Python Dasar", "Lois", 2024))
 perpus.tambah_buku(Buku(2, "OOP Lanjutan", "Adi", 2025))
