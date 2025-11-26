@@ -26,15 +26,28 @@ class Perpustakaan:
             console.print(f"[bold green]✔ Anggota '{nama}' berhasil ditambahkan![/bold green]")
         return anggota_baru
 
+    # def get_anggota_by_id(this, id_anggota):
+    #     for anggota in this.__daftar_anggota:
+    #         if anggota.id_anggota == id_anggota:
+    #             return anggota
+    #     return None
+
     def get_anggota_by_id(this, id_anggota):
-        for anggota in this.__daftar_anggota:
-            if anggota.id_anggota == id_anggota:
-                return anggota
+        sql = "SELECT * FROM anggota WHERE id_anggota = %s"
+        row = this.db.fetch_one(sql, (id_anggota,))
+        
+        if row:
+            return Anggota(row["id_anggota"], row["nama"], row["alamat"])
         return None
 
-    # ======================
+
+    def load_anggota(this):
+        rows = this.db.fetch_all("SELECT * FROM anggota")
+        for row in rows:
+            anggota = Anggota(row["id_anggota"], row["nama"], row["alamat"])
+            this.__daftar_anggota.append(anggota)
+
     # 🔹 Bagian Buku
-    # ======================
     def tambah_buku(this, buku, show_message=False):
         this.__daftar_buku.append(buku)
         if show_message:
@@ -55,20 +68,24 @@ class Perpustakaan:
             )
         return None
 
-
-    # ======================
     # 🔹 Bagian Peminjaman
-    # ======================
     def pinjam_buku(this, anggota, buku):
         if not buku.is_tersedia():
             return False, "Buku sedang dipinjam orang lain."
 
-        # tandai buku sebagai dipinjam
+        # tandai buku sebagai dipinjam di memori
         buku.set_tersedia(False)
         this.__daftar_peminjaman[buku.id_buku] = anggota.id_anggota
-        anggota.tambah_pinjaman(buku)  # pastikan method ini ada di kelas Anggota
+        anggota.tambah_pinjaman(buku) 
+
+        # update database
+        sql = "UPDATE buku SET tersedia = %s WHERE id_buku = %s"
+        sukses = this.db.execute(sql, (False, buku.id_buku))
+        if not sukses:
+            return False, "Gagal memperbarui status buku di database."
 
         return True, f"Buku '{buku.judul}' berhasil dipinjam oleh {anggota.nama}."
+
 
 
     def kembalikan_buku(this, anggota, buku, hari_terlambat=0):

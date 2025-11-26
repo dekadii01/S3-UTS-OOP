@@ -12,13 +12,21 @@ class Controller:
 
     def login(this):
         nim = this.view.input_nim()
-        anggota = this.perpustakaan.get_anggota_by_id(int(nim))
+        anggota = this.perpustakaan.get_anggota_by_id(int(nim))  # ini aman karena NIM angka
         if anggota:
             this.user_logged_in = anggota
             this.view.tampilkan_pesan(f"Selamat datang, {anggota.nama}!")
+            return True
         else:
-            this.view.tampilkan_pesan("NIM tidak ditemukan.")
-            return
+            this.view.tampilkan_pesan("[bold red]NIM tidak ditemukan.[/bold red]")
+            return False
+
+    def login_atau_exit(this):
+        berhasil = this.login()
+        if not berhasil:
+            this.view.tampilkan_pesan("[bold red]Login gagal. Program dihentikan.[/bold red]")
+            exit()
+
 
     def tampilkan_buku_dipinjam(this):
         peminjam = this.user_logged_in.get_pinjaman()
@@ -90,10 +98,8 @@ class Controller:
         if buku:
             hari_terlambat = int(this.view.input_data("Hari terlambat: "))
             sukses, pesan = this.perpustakaan.kembalikan_buku(this.user_logged_in, buku, hari_terlambat)
-            # this.view.tampilkan_pesan(pesan)
         else:
             this.view.tampilkan_pesan("Buku tidak ditemukan.")
 
     def tampilkan_buku(this):
         buku_list = this.perpustakaan.tampilkan_semua_buku()
-        # this.view.tampilkan_list(buku_list)

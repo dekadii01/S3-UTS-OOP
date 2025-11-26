@@ -23,5 +23,10 @@ class Anggota:
         if buku in this.__pinjaman:
             this.__pinjaman.remove(buku)
 
+    def get_anggota(this):
+        sql = "SELECT * FROM anggota"
+        rows = this.db.fetch_all(sql)
+        
+
     def get_pinjaman(this):
         return this.__pinjaman

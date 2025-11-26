@@ -4,7 +4,6 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.text import Text
 from rich.theme import Theme
-
 from models.perpustakaan import Perpustakaan
 from models.buku import Buku, BukuReferensi
 from models.anggota import Anggota
@@ -22,6 +21,7 @@ console = Console(theme=custom_theme)
 
 # Inisialisasi
 perpus = Perpustakaan()
+perpus.load_anggota()
 view = MainView()
 controller = Controller(perpus, view)
 
@@ -35,7 +35,8 @@ perpus.tambah_buku(Buku(4, "Algoritma & Struktur Data", "Reina", 2023))
 console.rule("[bold cyan]📚 SISTEM PERPUSTAKAAN 📚[/bold cyan]")
 console.print(Panel("Selamat datang di [bold green]Perpustakaan Digital[/bold green]!\nSilakan login untuk melanjutkan.", style="cyan"))
 
-controller.login()
+# controller.login()
+controller.login_atau_exit()
 
 # Loop menu utama
 while True:
