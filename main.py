@@ -26,10 +26,10 @@ view = MainView()
 controller = Controller(perpus, view)
 
 # Tambah buku contoh
-perpus.tambah_buku(Buku(1, "Python Dasar", "Lois", 2024))
-perpus.tambah_buku(Buku(2, "OOP Lanjutan", "Adi", 2025))
-perpus.tambah_buku(BukuReferensi(3, "Kamus Bahasa", "Pustaka", 2020))
-perpus.tambah_buku(Buku(4, "Algoritma & Struktur Data", "Reina", 2023))
+# perpus.tambah_buku(Buku(1, "Python Dasar", "Lois", 2024))
+# perpus.tambah_buku(Buku(2, "OOP Lanjutan", "Adi", 2025))
+# perpus.tambah_buku(BukuReferensi(3, "Kamus Bahasa", "Pustaka", 2020))
+# perpus.tambah_buku(Buku(4, "Algoritma & Struktur Data", "Reina", 2023))
 
 # Tampilan awal
 console.rule("[bold cyan]📚 SISTEM PERPUSTAKAAN 📚[/bold cyan]")
