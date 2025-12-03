@@ -11,7 +11,7 @@ class MainView:
         print("1. Pinjam Buku")
         print("2. Kembalikan Buku")
         print("3. Tampilkan Semua Buku")
-        print("4. Tampilkan Buku yang Dipinjam")  # Menu baru
+        print("4. Tampilkan Buku yang Dipinjam")  
         print("5. Keluar")
 
     @staticmethod
