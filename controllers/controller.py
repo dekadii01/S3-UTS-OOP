@@ -111,7 +111,7 @@ class Controller:
             ORDER BY p.tanggal_pinjam DESC
 
         """
-        daftar_pinjam = this.perpustakaan.db.fetch_all(sql, (this.user_logged_in.id_anggota,))
+        daftar_pinjam = this.perpustakaan.db.fetch_all(sql, (this.user_logged_in.id_anggota))
 
         if not daftar_pinjam:
             console.print("[bold yellow]📭 Anda belum meminjam buku apapun.[/bold yellow]")
@@ -136,7 +136,6 @@ class Controller:
 
         console.print(table)
 
-        # Input ID buku sebagai string
         id_buku = this.view.input_data("Masukkan ID buku yang dikembalikan: ").strip()
 
         if not id_buku:
@@ -164,9 +163,6 @@ class Controller:
             console.print(f"[bold green]{pesan}[/bold green]")
         else:
             console.print(f"[bold red]❌ {pesan}[/bold red]")
-
-
-
 
     def tampilkan_buku(this):
         buku_list = this.perpustakaan.tampilkan_semua_buku()
