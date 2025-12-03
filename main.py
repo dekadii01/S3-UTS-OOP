@@ -1,16 +1,12 @@
+# main.py
 from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.prompt import Prompt
-from rich.text import Text
 from rich.theme import Theme
+
 from models.perpustakaan import Perpustakaan
-from models.buku import Buku, BukuReferensi
-from models.anggota import Anggota
 from views.main_view import MainView
 from controllers.controller import Controller
 
-# Setup Rich console
+# Rich theme
 custom_theme = Theme({
     "info": "bold cyan",
     "success": "bold green",
@@ -22,52 +18,37 @@ console = Console(theme=custom_theme)
 # Inisialisasi
 perpus = Perpustakaan()
 perpus.load_anggota()
+
 view = MainView()
 controller = Controller(perpus, view)
 
-# Tambah buku contoh
-# perpus.tambah_buku(Buku(1, "Python Dasar", "Lois", 2024))
-# perpus.tambah_buku(Buku(2, "OOP Lanjutan", "Adi", 2025))
-# perpus.tambah_buku(BukuReferensi(3, "Kamus Bahasa", "Pustaka", 2020))
-# perpus.tambah_buku(Buku(4, "Algoritma & Struktur Data", "Reina", 2023))
+# Tampilkan header awal
+view.tampilkan_header_awal()
 
-# Tampilan awal
-console.rule("[bold cyan]📚 SISTEM PERPUSTAKAAN 📚[/bold cyan]")
-console.print(Panel("Selamat datang di [bold green]Perpustakaan Digital[/bold green]!\nSilakan login untuk melanjutkan.", style="cyan"))
-
-# controller.login()
+# Login
 controller.login_atau_exit()
 
 # Loop menu utama
 while True:
-    console.rule("[bold yellow]MENU UTAMA[/bold yellow]")
-    table = Table(title="Pilih Menu", show_header=False, header_style="bold magenta")
-    table.add_column("Nomor", justify="center", style="bold cyan")
-    table.add_column("Deskripsi", style="white")
-    table.add_row("1", "Pinjam Buku")
-    table.add_row("2", "Kembalikan Buku")
-    table.add_row("3", "Tampilkan Daftar Buku")
-    table.add_row("4", "Tampilkan Buku yang Dipinjam")
-    table.add_row("5", "Keluar")
-
-    console.print(table)
-
-    pilihan = Prompt.ask("[bold yellow]Masukkan pilihan kamu[/bold yellow]", choices=["1", "2", "3", "4", "5"], default="1")
+    view.tampilkan_menu_utama()
+    pilihan = view.input_pilihan_menu()
 
     if pilihan == "1":
-        console.print(Panel("📖 [bold cyan]Menu Pinjam Buku[/bold cyan]", style="bold green"))
+        view.tampilkan_panel("📖 Menu Pinjam Buku")
         controller.pinjam_buku()
+
     elif pilihan == "2":
-        console.print(Panel("🔁 [bold cyan]Menu Kembalikan Buku[/bold cyan]", style="bold green"))
+        view.tampilkan_panel("🔁 Menu Kembalikan Buku")
         controller.kembalikan_buku()
+
     elif pilihan == "3":
-        console.print(Panel("📚 [bold cyan]Daftar Buku yang Tersedia[/bold cyan]", style="bold green"))
+        view.tampilkan_panel("📚 Daftar Buku yang Tersedia")
         controller.tampilkan_buku()
+
     elif pilihan == "4":
-        console.print(Panel("📕 [bold cyan]Buku yang Sedang Dipinjam[/bold cyan]", style="bold green"))
+        view.tampilkan_panel("📕 Buku yang Sedang Dipinjam")
         controller.tampilkan_buku_dipinjam()
+
     elif pilihan == "5":
-        console.print(Panel("👋 Terima kasih telah menggunakan sistem perpustakaan!", style="bold yellow"))
+        view.tampilkan_panel("👋 Terima kasih telah menggunakan sistem perpustakaan!")
         break
-    else:
-        console.print("[error]Pilihan tidak valid![/error]")
